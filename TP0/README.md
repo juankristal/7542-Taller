@@ -1,3 +1,7 @@
+# Trabajo Practico 0 - Taller de Programacion 1
+
+## Kristal Juan Ignacio - 99779
+
 # Paso 0
 
 a) 
