@@ -12,9 +12,33 @@ b) Valgrind sirve para detectar perdidas o errores de memoria en un programa. Se
 
 c) sizeof() representa la cantidad de memoria (en bytes) alocada para una estructura o tipo de dato determinado recibido por parametro. Por lo tanto, el valor de salida de sizeof(int) sera 4 y el de sizeof(char) sera 1.
 
+> El valor que nos devuelve `sizeof()` depende de la arquitectura y compilador.
+
 d) No necesariamente. Puede serlo pero no siempre es asi. Un struct que contenga un char y un int tendra un sizeof() 8 en lugar de 5 que seria la suma de ambos. Esto se debe a que la memoria se asigna en base al atributo del struct que tenga mayor peso y se le asigna el mismo espacio a cada uno de dichos atributos.
 
+> Idem anterior. El padding se agrega para alinear los atributos de un struct en una potencia de 2 (generalmente al tamaño de un *word* del procesador). Los atributos **NO** se reordenan. Ej: medir el tamaño de los siguientes structs
+
+```
+struct cosa_chica {
+	char a;
+	char b;
+	char c;
+	char d;
+	int e;
+};
+
+struct cosa_grande {
+	char a;
+	char b;
+	char c;
+	int e;
+	char d;
+};
+```
+
 e) Los archivos estandar STDIN, STDOUT y STDERR corresponden a canales de comunicacion entre el programa y el ambiente de ejecucion. STDIN es el input o entrada, STDOUT el output o salida y STDERR la conexion de errores. Utilizando los caracteres > y < podemos redireccionar el output o el input a otro archivo. Usando > redirigimos el primer argumento al segundo y vice versa con <. Utilizando un pipe (|) podemos redireccionar el output de una aplicacion al input de otra.
+
+> ¿Cómo redirijo *stderr*?
 
 # Paso 1
 
@@ -39,6 +63,7 @@ b) En la seccion de desempaquetado y compilado de codigo se ven los errores de g
 
 c) El sistema no reporto warnings. A pesar que al correrlos localmente los errores de linker son considerados warnings, el sistema los marca como errores porque espera que nuestros programas no tengan warnings. Esto se observa al final del log de error "all warnings being treated as errors".
 
+> Son errores de *compilador*. Para ser más preciso, son *warnings* de compilador considerados como errores.
 
 # Paso 2
 
@@ -54,6 +79,8 @@ c)
 
 Los errores en este caso son todos de linkeo pues son definiciones implicitas de funciones. Dichas funciones o tipos estan definidos en bibliotecas como stddef, stdlib y stdio.
 
+> Son errores de compilador, notar que el proceso que falla es `cc1`, y que lo que falla es la creación del código objeto (el *.o*)
+
 # Paso 3
 
 a) Las correcciones realizadas fueron incluir las librerias que contienen las funciones utilizadas en la entrega anterior como malloc. Dichos headers son stdio, stdlib y stddef.
@@ -63,6 +90,8 @@ b)
 ![Test](imgs/paso3.png?raw=true)
 
 Aca hubo nuevamente un error de linkeo pues la funcion wordscounter_destroy esta definida en el header pero no en el codigo fuente.
+
+> Está declarada pero no definida
 
 # Paso 4
 
@@ -82,7 +111,12 @@ c)
 
 d) No se solucionaria utilizando strncpy ya que esto unicamente copiaria los primeros 30 caracteres del nombre del archivo y por lo tanto no podria abrirlo de todas formas. En este caso devolveria el codigo de ERROR.
 
-e) Un buffer overflow como fue explicado anteriormente es escribir en memoria que no corresponde al buffer asignado. Un segmentation fault ocurre al intentar acceder a memoria que no nos pertenece. Este ultimo podria ocurrrir durante un buffer overflow.
+> Ojo, no el nombre queda incompleto, sino que strncpy no le agrega el caracter nulo, por lo que al usar el string no se sabría donde termina, pudiendo leer basura y en el peor (o mejor) de los casos terminar en SegFault
+
+e) Un buffer overflow como fue explicado anteriormente es escribir en memoria que no corresponde al buffer asignado. Un segmentation fault ocurre al intentar acceder a memoria que no nos pertenece. Este ultimo podria ocurrrir durante un buffer overflow. 
+
+> Sí, para ser más amplio, un segfault se puede dar cuando intentamos hacer una operación no permitida sobre un segmento de memoria (incluso si nos pertenece). Por ejemplo, intentar escribir en un segmento de memoria de sólo lectura como el code segment.
+> otro dato de color: Los segmentation fault son detectados por hardware, es la MMU la que detecta las operaciones inválidas y lanza una señal SIGSEGV (tema de sisop igual). Los buffer overflows no son detectados por hardware, lo que los hace más peligrosos.
 
 
 # Parte 5
